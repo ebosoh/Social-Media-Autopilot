@@ -65,6 +65,7 @@ createApp({
         const userModalError = ref("");
 
         // ── Dashboard State ───────────────────────────────────────────────────
+        const currentView = ref('dashboard'); // 'dashboard', 'queue', 'trends', 'settings'
         const queue = ref([]);
         const isLoading = ref(false);
         const isTriggering = ref(false);
@@ -422,6 +423,14 @@ createApp({
             return 'share-network';
         };
 
+        // ── Navigation ────────────────────────────────────────────────────────
+        const changeView = (view) => {
+            currentView.value = view;
+            if (view === 'queue' || view === 'dashboard') {
+                searchQuery.value = ''; // Reset search on nav
+            }
+        };
+
         // ── Lifecycle ─────────────────────────────────────────────────────────
         onMounted(() => {
             restoreSession();
@@ -439,6 +448,8 @@ createApp({
             loginError, isLoggingIn, userInitials, googleIdToken,
             GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID_EXPOSED,
             handleLogin, handleLogout,
+            // Navigation
+            currentView, changeView,
             // User Management
             showUserModal, allowedUsers, isLoadingUsers,
             newUserEmail, newUserName, newUserRole, isAddingUser, userModalError,

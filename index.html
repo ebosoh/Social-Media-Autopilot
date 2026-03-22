@@ -107,11 +107,11 @@
                     <h2>Autopilot</h2>
                 </div>
                 <ul class="nav-links">
-                    <li class="active"><a href="#"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-                    <li><a href="#"><i class="ph ph-list-dashes"></i> Content Queue</a></li>
-                    <li><a href="#"><i class="ph ph-trend-up"></i> Trends</a></li>
+                    <li :class="{ active: currentView === 'dashboard' }"><a href="#" @click.prevent="changeView('dashboard')"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+                    <li :class="{ active: currentView === 'queue' }"><a href="#" @click.prevent="changeView('dashboard')"><i class="ph ph-list-dashes"></i> Content Queue</a></li>
+                    <li :class="{ active: currentView === 'trends' }"><a href="#" @click.prevent="changeView('trends')"><i class="ph ph-trend-up"></i> Trends</a></li>
                     <li><a href="#" @click.prevent="openUserModal"><i class="ph ph-users"></i> Manage Users</a></li>
-                    <li><a href="#"><i class="ph ph-gear"></i> Settings</a></li>
+                    <li :class="{ active: currentView === 'settings' }"><a href="#" @click.prevent="changeView('settings')"><i class="ph ph-gear"></i> Settings</a></li>
                 </ul>
                 <div class="sidebar-footer">
                     <div class="sidebar-user">
@@ -143,7 +143,8 @@
                     </div>
                 </header>
 
-                <section class="stats-overview">
+                <template v-if="currentView === 'dashboard'">
+                    <section class="stats-overview">
                     <div class="stat-card glass-panel">
                         <i class="ph ph-files"></i>
                         <div>
@@ -233,7 +234,53 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </section>
+                </template>
+
+                <!-- Trends View -->
+                <template v-if="currentView === 'trends'">
+                    <div class="section-header" style="margin-top: 2rem;">
+                        <h2>Trending Topics</h2>
+                        <button class="btn btn-secondary"><i class="ph ph-arrows-clockwise"></i> Scan Trends</button>
+                    </div>
+                    <div class="glass-panel empty-state" style="margin-top: 1.5rem;">
+                        <i class="ph ph-trend-up" style="font-size: 3rem; color: var(--accent-light); margin-bottom: 1rem;"></i>
+                        <p style="text-align: center; max-width: 600px; line-height: 1.6;">Trend analysis module is active.<br/>The agent will automatically surface relevant industry topics here during the research loop prior to drafting new content.</p>
+                    </div>
+                </template>
+
+                <!-- Settings View -->
+                <template v-if="currentView === 'settings'">
+                    <div class="section-header" style="margin-top: 2rem;">
+                        <h2>Agent Settings</h2>
+                        <button class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Save Config</button>
+                    </div>
+                    <div class="glass-panel" style="margin-top: 1.5rem; max-width: 800px;">
+                        <div class="edit-post-form" style="gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Target Website URL</label>
+                                <input type="text" class="modal-input" value="https://example.com" placeholder="e.g. https://yourbrand.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Visual Generation Prompt Prefix</label>
+                                <input type="text" class="modal-input" value="Cinematic lighting, high-end professional." placeholder="Instructions for image generation">
+                            </div>
+                            <div class="form-group">
+                                <label>Publishing Mode</label>
+                                <select class="modal-select">
+                                    <option value="manual" selected>Review all drafts (Manual Approval)</option>
+                                    <option value="auto">Fully Autonomous (Auto-Publish)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-top: 1rem;">
+                                <label>Brand Voice Identity</label>
+                                <textarea rows="4" class="modal-input" placeholder="Extracted brand identity parameters will appear here..." readonly>{"mission": "Providing excellent care.", "brand_voice": "Professional and compassionate."}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
             </main>
         </template>
 
