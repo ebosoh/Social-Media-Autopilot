@@ -335,6 +335,63 @@ createApp({
             finally { post.isApproving = false; }
         };
 
+        const deletePost = async (post) => {
+            if (!confirm("Are you sure you want to delete this post?")) return;
+            try {
+                if (!IS_HOSTED) {
+                    queue.value = queue.value.filter(p => p._rowNum !== post._rowNum);
+                    return;
+                }
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'deletePost', idToken: googleIdToken.value, rowNum: post._rowNum })
+                });
+                const result = await res.json();
+                if (result.success) fetchData();
+            } catch { alert("Failed to delete post."); }
+        };
+
+        const showEditModal = ref(false);
+        const editingPost = ref(null);
+        const editForm = ref({ topic: "", postText: "", platform: "" });
+        const isSavingEdit = ref(false);
+
+        const openEditModal = (post) => {
+            editingPost.value = post;
+            editForm.value = { topic: post.Topic, postText: post.Post_Text, platform: post.Platform };
+            showEditModal.value = true;
+        };
+
+        const saveEdit = async () => {
+            isSavingEdit.value = true;
+            try {
+                if (!IS_HOSTED) {
+                    Object.assign(editingPost.value, { Topic: editForm.value.topic, Post_Text: editForm.value.postText, Platform: editForm.value.platform });
+                    showEditModal.value = false;
+                    return;
+                }
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'editPost',
+                        idToken: googleIdToken.value,
+                        rowNum: editingPost.value._rowNum,
+                        topic: editForm.value.topic,
+                        postText: editForm.value.postText,
+                        platform: editForm.value.platform
+                    })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showEditModal.value = false;
+                    fetchData();
+                }
+            } catch { alert("Failed to save changes."); }
+            finally { isSavingEdit.value = false; }
+        };
+
         const triggerResearch = async () => {
             isTriggering.value = true;
             try {
@@ -390,6 +447,8 @@ createApp({
             queue, isLoading, isTriggering, searchQuery,
             filteredQueue, pendingCount,
             fetchData, approvePost, triggerResearch,
+            deletePost, openEditModal, saveEdit,
+            showEditModal, editingPost, editForm, isSavingEdit,
             truncateText, formatDate, getPlatformIcon, handleImageError
         };
     }
