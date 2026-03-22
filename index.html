@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Autopilot - Command Center</title>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Identity Services (for hosted Google Sign-In) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Local Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app" v-cloak>
+
+        <!-- ====== LOGIN SCREEN ====== -->
+        <div class="login-overlay" v-if="!isAuthenticated">
+            <div class="login-card glass-panel">
+                <div class="login-logo">
+                    <i class="ph-fill ph-aperture"></i>
+                    <h2>Autopilot</h2>
+                </div>
+                <p class="login-subtitle">Sign in to access the Command Center</p>
+
+                <!-- Google Sign-In button (shown when backend is connected) -->
+                <div class="google-signin-area" v-if="isHosted">
+                    <div id="g_id_onload"
+                         :data-client_id="GOOGLE_CLIENT_ID"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="onGoogleSignIn"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="filled_black"
+                         data-text="sign_in_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="340">
+                    </div>
+                    <div class="login-divider"><span>or use email</span></div>
+                </div>
+
+                <form @submit.prevent="handleLogin" novalidate>
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-envelope"></i>
+                            <input 
+                                id="login-email"
+                                type="email" 
+                                v-model="loginEmail" 
+                                placeholder="admin@yourbrand.com"
+                                autocomplete="username"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-group" v-if="!isHosted">
+                        <label for="login-password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-lock-simple"></i>
+                            <input 
+                                id="login-password"
+                                :type="showPassword ? 'text' : 'password'" 
+                                v-model="loginPassword" 
+                                placeholder="••••••••"
+                                autocomplete="current-password"
+                                required>
+                            <button type="button" class="toggle-password" @click="showPassword = !showPassword" tabindex="-1">
+                                <i :class="showPassword ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="login-hint" v-if="isHosted">
+                        <i class="ph ph-info"></i> Enter your Google email to verify access, or use the button above.
+                    </p>
+
+                    <p class="login-error" v-if="loginError">
+                        <i class="ph ph-warning-circle"></i> {{ loginError }}
+                    </p>
+
+                    <button type="submit" class="btn btn-primary btn-block" :disabled="isLoggingIn">
+                        <i class="ph ph-spinner-gap spin" v-if="isLoggingIn"></i>
+                        <i class="ph ph-sign-in" v-else></i>
+                        {{ isLoggingIn ? 'Signing in...' : 'Sign In' }}
+                    </button>
+                </form>
+
+                <p class="login-footer">Social Media Autopilot &mdash; Powered by TechBrain</p>
+            </div>
+        </div>
+
+        <!-- ====== MAIN DASHBOARD (only if authenticated) ====== -->
+        <template v-if="isAuthenticated">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+                <div class="logo">
+                    <i class="ph-fill ph-aperture"></i>
+                    <h2>Autopilot</h2>
+                </div>
+                <ul class="nav-links">
+                    <li class="active"><a href="#"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+                    <li><a href="#"><i class="ph ph-list-dashes"></i> Content Queue</a></li>
+                    <li><a href="#"><i class="ph ph-trend-up"></i> Trends</a></li>
+                    <li><a href="#" @click.prevent="openUserModal"><i class="ph ph-users"></i> Manage Users</a></li>
+                    <li><a href="#"><i class="ph ph-gear"></i> Settings</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <div class="sidebar-user">
+                        <div class="avatar sm">{{ userInitials }}</div>
+                        <span class="sidebar-user-email">{{ loginEmail }}</span>
+                    </div>
+                    <button class="btn-logout" @click="handleLogout" title="Sign Out">
+                        <i class="ph ph-sign-out"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="topbar">
+                    <div>
+                        <h1>Command Center</h1>
+                        <p class="subtitle">Review, approve, and orchestrate your autonomous social media agent.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" @click="triggerResearch" :disabled="isTriggering">
+                            <i class="ph ph-lightning" v-if="!isTriggering"></i>
+                            <i class="ph ph-spinner-gap spin" v-else></i>
+                            {{ isTriggering ? 'Triggering...' : 'Force Research Loop' }}
+                        </button>
+                        <div class="user-profile" @click="handleLogout" title="Click to Sign Out" style="cursor:pointer;">
+                            <div class="avatar">{{ userInitials }}</div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="stats-overview">
+                    <div class="stat-card glass-panel">
+                        <i class="ph ph-files"></i>
+                        <div>
+                            <h3>Pending Approvals</h3>
+                            <p class="stat-number">{{ pendingCount }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <i class="ph ph-paper-plane-tilt"></i>
+                        <div>
+                            <h3>Posted this Week</h3>
+                            <p class="stat-number">12</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <i class="ph ph-robot"></i>
+                        <div>
+                            <h3>Next Scheduled Run</h3>
+                            <p class="stat-time">In 6 hours</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Content Queue -->
+                <section class="queue-section">
+                    <div class="section-header">
+                        <h2>Content Queue</h2>
+                        <div>
+                            <input type="text" placeholder="Search topics..." class="search-input" v-model="searchQuery">
+                            <button class="btn btn-secondary" @click="fetchData">
+                                 <i class="ph ph-arrows-clockwise" :class="{ 'spin': isLoading }"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="isLoading" class="glass-panel loading-state">
+                        <i class="ph ph-spinner-gap spin"></i>
+                        <p>Loading queue data from Google Sheets...</p>
+                    </div>
+
+                    <div v-else-if="filteredQueue.length === 0" class="glass-panel empty-state">
+                        <i class="ph ph-tray"></i>
+                        <p>No posts found. Trigger a research loop or check back later.</p>
+                    </div>
+
+                    <div v-else class="queue-grid">
+                        <div class="post-card glass-panel" v-for="post in filteredQueue" :key="post._rowNum">
+                            <div class="post-header">
+                                <span class="platform-badge" :class="post.Platform.toLowerCase()">
+                                    <i :class="'ph ph-' + getPlatformIcon(post.Platform)"></i>
+                                    {{ post.Platform }}
+                                </span>
+                                <span class="status-badge" :class="post.Status.toLowerCase().replace(' ', '-')">
+                                    {{ post.Status }}
+                                </span>
+                            </div>
+                            
+                            <div class="post-image-container">
+                                <img :src="post.Image_URL || 'https://images.unsplash.com/photo-1601153219150-4bec8bea26d9?auto=format&fit=crop&q=80&w=600'" 
+                                     alt="Generated asset" class="post-image" @error="handleImageError">
+                            </div>
+
+                            <div class="post-content">
+                                <h3 class="post-topic">{{ post.Topic }}</h3>
+                                <p class="post-text">{{ truncateText(post.Post_Text, 150) }}</p>
+                            </div>
+
+                            <div class="post-footer">
+                                <p class="timestamp"><i class="ph ph-clock"></i> {{ formatDate(post.Timestamp) }}</p>
+                                <button 
+                                    v-if="post.Status === 'Draft'" 
+                                    class="btn btn-success" 
+                                    @click="approvePost(post)"
+                                    :disabled="post.isApproving">
+                                    <i class="ph ph-spinner-gap spin" v-if="post.isApproving"></i>
+                                    <i class="ph ph-check" v-else></i>
+                                    Approve
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </template>
+
+        <!-- ====== USER MANAGEMENT MODAL ====== -->
+        <div class="modal-overlay" v-if="showUserModal" @click.self="showUserModal = false">
+            <div class="modal-card glass-panel">
+                <div class="modal-header">
+                    <h2><i class="ph ph-users"></i> Manage Allowed Users</h2>
+                    <button class="btn-icon" @click="showUserModal = false"><i class="ph ph-x"></i></button>
+                </div>
+
+                <p class="modal-info">
+                    Users listed here are allowed to access this dashboard. Their Google account email must match exactly.
+                </p>
+
+                <!-- Add User Form -->
+                <div class="add-user-form">
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" v-model="newUserEmail" placeholder="Email address" class="modal-input">
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="ph ph-identification-card"></i>
+                        <input type="text" v-model="newUserName" placeholder="Display name" class="modal-input">
+                    </div>
+                    <select v-model="newUserRole" class="modal-select">
+                        <option value="viewer">Viewer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <button class="btn btn-primary" @click="addUser" :disabled="isAddingUser">
+                        <i class="ph ph-spinner-gap spin" v-if="isAddingUser"></i>
+                        <i class="ph ph-plus" v-else></i>
+                        Add
+                    </button>
+                </div>
+
+                <p class="modal-error" v-if="userModalError">
+                    <i class="ph ph-warning-circle"></i> {{ userModalError }}
+                </p>
+
+                <!-- User List -->
+                <div class="user-list">
+                    <div v-if="isLoadingUsers" class="modal-loading">
+                        <i class="ph ph-spinner-gap spin"></i> Loading users...
+                    </div>
+                    <div v-else-if="allowedUsers.length === 0" class="modal-empty">
+                        No users added yet.
+                    </div>
+                    <div v-else class="user-row" v-for="user in allowedUsers" :key="user._rowNum">
+                        <div class="user-avatar-sm">{{ (user.Name || user.Email || '?')[0].toUpperCase() }}</div>
+                        <div class="user-details">
+                            <strong>{{ user.Name || '(no name)' }}</strong>
+                            <span>{{ user.Email }}</span>
+                        </div>
+                        <span class="role-badge" :class="user.Role">{{ user.Role || 'viewer' }}</span>
+                        <button class="btn-remove" @click="removeUser(user)" title="Remove user">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
