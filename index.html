@@ -242,11 +242,32 @@
                 <template v-if="currentView === 'trends'">
                     <div class="section-header" style="margin-top: 2rem;">
                         <h2>Trending Topics</h2>
-                        <button class="btn btn-secondary"><i class="ph ph-arrows-clockwise"></i> Scan Trends</button>
+                        <div>
+                            <span v-if="trendsMessage" style="margin-right: 1rem; color: var(--text-secondary);">{{ trendsMessage }}</span>
+                            <button class="btn btn-secondary" @click="scanTrends" :disabled="isScanningTrends">
+                                <i class="ph ph-arrows-clockwise" :class="{ 'spin': isScanningTrends }"></i> 
+                                {{ isScanningTrends ? 'Scanning...' : 'Scan Trends' }}
+                            </button>
+                        </div>
                     </div>
-                    <div class="glass-panel empty-state" style="margin-top: 1.5rem;">
+
+                    <div v-if="isLoadingTrends" class="glass-panel loading-state" style="margin-top: 1.5rem;">
+                        <i class="ph ph-spinner-gap spin"></i>
+                        <p>Loading trends from database...</p>
+                    </div>
+                    
+                    <div v-else-if="trendsList.length === 0" class="glass-panel empty-state" style="margin-top: 1.5rem;">
                         <i class="ph ph-trend-up" style="font-size: 3rem; color: var(--accent-light); margin-bottom: 1rem;"></i>
-                        <p style="text-align: center; max-width: 600px; line-height: 1.6;">Trend analysis module is active.<br/>The agent will automatically surface relevant industry topics here during the research loop prior to drafting new content.</p>
+                        <p style="text-align: center; max-width: 600px; line-height: 1.6;">No trends found.<br/>Click "Scan Trends" to have the agent scour the web for relevant industry topics based on your brand profile.</p>
+                    </div>
+
+                    <div v-else class="queue-grid" style="margin-top: 1.5rem;">
+                         <div class="post-card glass-panel" v-for="(trend, index) in trendsList" :key="index">
+                             <div class="post-content">
+                                 <h3 class="post-topic">{{ trend.topic }}</h3>
+                                 <p class="post-text" style="color: var(--text-secondary); margin-top:0.5rem;"><i class="ph ph-clock"></i> Discovered: {{ formatDate(trend.timestamp) }}</p>
+                             </div>
+                         </div>
                     </div>
                 </template>
 
@@ -254,28 +275,35 @@
                 <template v-if="currentView === 'settings'">
                     <div class="section-header" style="margin-top: 2rem;">
                         <h2>Agent Settings</h2>
-                        <button class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Save Config</button>
+                        <div>
+                            <span v-if="settingsMessage" style="margin-right: 1rem; color: var(--success); font-weight: 500;">{{ settingsMessage }}</span>
+                            <button class="btn btn-primary" @click="saveSettings" :disabled="isSavingSettings">
+                                <i class="ph ph-spinner-gap spin" v-if="isSavingSettings"></i>
+                                <i class="ph ph-floppy-disk" v-else></i> 
+                                {{ isSavingSettings ? 'Saving...' : 'Save Config' }}
+                            </button>
+                        </div>
                     </div>
                     <div class="glass-panel" style="margin-top: 1.5rem; max-width: 800px;">
                         <div class="edit-post-form" style="gap: 1.5rem;">
                             <div class="form-group">
                                 <label>Target Website URL</label>
-                                <input type="text" class="modal-input" value="https://example.com" placeholder="e.g. https://yourbrand.com">
+                                <input type="text" class="modal-input" v-model="settings.targetUrl" placeholder="e.g. https://yourbrand.com">
                             </div>
                             <div class="form-group">
                                 <label>Visual Generation Prompt Prefix</label>
-                                <input type="text" class="modal-input" value="Cinematic lighting, high-end professional." placeholder="Instructions for image generation">
+                                <input type="text" class="modal-input" v-model="settings.promptPrefix" placeholder="Instructions for image generation">
                             </div>
                             <div class="form-group">
                                 <label>Publishing Mode</label>
-                                <select class="modal-select">
-                                    <option value="manual" selected>Review all drafts (Manual Approval)</option>
+                                <select class="modal-select" v-model="settings.publishMode">
+                                    <option value="manual">Review all drafts (Manual Approval)</option>
                                     <option value="auto">Fully Autonomous (Auto-Publish)</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-top: 1rem;">
                                 <label>Brand Voice Identity</label>
-                                <textarea rows="4" class="modal-input" placeholder="Extracted brand identity parameters will appear here..." readonly>{"mission": "Providing excellent care.", "brand_voice": "Professional and compassionate."}</textarea>
+                                <textarea rows="4" class="modal-input" placeholder="Extracted brand identity parameters will appear here..." readonly>{{ brandProfile || 'No knowledge base profile found. Try triggering a research loop.' }}</textarea>
                             </div>
                         </div>
                     </div>

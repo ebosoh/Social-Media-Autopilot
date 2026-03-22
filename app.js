@@ -71,6 +71,22 @@ createApp({
         const isTriggering = ref(false);
         const searchQuery = ref("");
 
+        // ── Settings State ────────────────────────────────────────────────────
+        const settings = ref({
+            targetUrl: "",
+            promptPrefix: "",
+            publishMode: "manual"
+        });
+        const brandProfile = ref("");
+        const isSavingSettings = ref(false);
+        const settingsMessage = ref("");
+
+        // ── Trends State ──────────────────────────────────────────────────────
+        const trendsList = ref([]);
+        const isLoadingTrends = ref(false);
+        const isScanningTrends = ref(false);
+        const trendsMessage = ref("");
+
         // ── Constants exposed to template ─────────────────────────────────────
         const isHosted = IS_HOSTED;
         const GOOGLE_CLIENT_ID_EXPOSED = GOOGLE_CLIENT_ID;
@@ -408,6 +424,78 @@ createApp({
             finally { isTriggering.value = false; }
         };
 
+        const fetchSettings = async () => {
+            if (!IS_HOSTED) return;
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getSettings`);
+                const result = await res.json();
+                if (result.settings) {
+                    settings.value.targetUrl = result.settings['Target_URL'] || "";
+                    settings.value.promptPrefix = result.settings['Prompt_Prefix'] || "";
+                    settings.value.publishMode = result.settings['Publish_Mode'] || "manual";
+                }
+                brandProfile.value = result.brandProfile || "";
+            } catch (err) { console.error("Failed to fetch settings", err); }
+        };
+
+        const saveSettings = async () => {
+            settingsMessage.value = "";
+            isSavingSettings.value = true;
+            try {
+                if (!IS_HOSTED) { await new Promise(r => setTimeout(r, 600)); return; }
+                const payload = {
+                    action: 'saveSettings',
+                    idToken: googleIdToken.value,
+                    settings: {
+                        'Target_URL': settings.value.targetUrl,
+                        'Prompt_Prefix': settings.value.promptPrefix,
+                        'Publish_Mode': settings.value.publishMode
+                    }
+                };
+                const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                const result = await res.json();
+                settingsMessage.value = result.success ? "Settings saved successfully!" : (result.error || "Failed to save settings.");
+            } catch (err) {
+                settingsMessage.value = "Network error while saving.";
+            } finally {
+                isSavingSettings.value = false;
+                setTimeout(() => settingsMessage.value = "", 3000);
+            }
+        };
+
+        const fetchTrends = async () => {
+            if (!IS_HOSTED) return;
+            isLoadingTrends.value = true;
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getTrends`);
+                const result = await res.json();
+                trendsList.value = result.trends || [];
+            } catch (err) { console.error("Failed to fetch trends", err); } 
+            finally { isLoadingTrends.value = false; }
+        };
+
+        const scanTrends = async () => {
+            trendsMessage.value = "";
+            isScanningTrends.value = true;
+            try {
+                if (!IS_HOSTED) { await new Promise(r => setTimeout(r, 1500)); return; }
+                const payload = { action: 'scanTrends', idToken: googleIdToken.value };
+                const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.success) {
+                    trendsMessage.value = `New trend found!`;
+                    await fetchTrends();
+                } else {
+                    trendsMessage.value = result.error || "Failed to discover a new trend.";
+                }
+            } catch (err) {
+                trendsMessage.value = "Network error while scanning.";
+            } finally {
+                isScanningTrends.value = false;
+                setTimeout(() => trendsMessage.value = "", 4000);
+            }
+        };
+
         // ── Utilities ─────────────────────────────────────────────────────────
         const truncateText = (text, len) => !text ? "" : text.length <= len ? text : text.substring(0, len) + '...';
         const formatDate = (ds) => !ds ? "" : new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -434,7 +522,11 @@ createApp({
         // ── Lifecycle ─────────────────────────────────────────────────────────
         onMounted(() => {
             restoreSession();
-            if (isAuthenticated.value) fetchData();
+            if (isAuthenticated.value) {
+                fetchData();
+                fetchSettings();
+                fetchTrends();
+            }
 
             // Listen for Google Sign-In callback
             window.addEventListener('google-signin', (e) => {
@@ -450,6 +542,10 @@ createApp({
             handleLogin, handleLogout,
             // Navigation
             currentView, changeView,
+            // Settings
+            settings, brandProfile, isSavingSettings, settingsMessage, saveSettings,
+            // Trends
+            trendsList, isLoadingTrends, isScanningTrends, trendsMessage, scanTrends,
             // User Management
             showUserModal, allowedUsers, isLoadingUsers,
             newUserEmail, newUserName, newUserRole, isAddingUser, userModalError,
