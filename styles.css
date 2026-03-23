@@ -798,6 +798,11 @@ h1 {
     cursor: pointer;
 }
 
+select option, .modal-select option {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+}
+
 .modal-error {
     color: #fca5a5;
     font-size: 0.85rem;
