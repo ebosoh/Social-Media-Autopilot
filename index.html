@@ -277,7 +277,7 @@
                         <h2>Agent Settings</h2>
                         <div>
                             <span v-if="settingsMessage" style="margin-right: 1rem; color: var(--success); font-weight: 500;">{{ settingsMessage }}</span>
-                            <button class="btn btn-primary" @click="saveSettings" :disabled="isSavingSettings">
+                            <button class="btn btn-primary" @click="saveSettings" :disabled="isSavingSettings || isAnalyzingWebsite">
                                 <i class="ph ph-spinner-gap spin" v-if="isSavingSettings"></i>
                                 <i class="ph ph-floppy-disk" v-else></i> 
                                 {{ isSavingSettings ? 'Saving...' : 'Save Config' }}
@@ -288,11 +288,19 @@
                         <div class="edit-post-form" style="gap: 1.5rem;">
                             <div class="form-group">
                                 <label>Target Website URL</label>
-                                <input type="text" class="modal-input" v-model="settings.targetUrl" placeholder="e.g. https://yourbrand.com">
+                                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                    <input type="text" class="modal-input" v-model="settings.targetUrl" placeholder="e.g. https://yourbrand.com" style="flex: 1;">
+                                    <button class="btn btn-secondary" @click="analyzeWebsite" :disabled="isAnalyzingWebsite" style="white-space: nowrap; flex-shrink: 0;">
+                                        <i class="ph ph-spinner-gap spin" v-if="isAnalyzingWebsite"></i>
+                                        <i class="ph ph-sparkle" v-else></i>
+                                        {{ isAnalyzingWebsite ? 'Analyzing...' : 'Auto-Generate' }}
+                                    </button>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;">Enter your website URL then click Auto-Generate to let the AI build your brand profile.</p>
                             </div>
                             <div class="form-group">
                                 <label>Visual Generation Prompt Prefix</label>
-                                <input type="text" class="modal-input" v-model="settings.promptPrefix" placeholder="Instructions for image generation">
+                                <input type="text" class="modal-input" v-model="settings.promptPrefix" placeholder="AI will fill this in, or you can write your own...">
                             </div>
                             <div class="form-group">
                                 <label>Publishing Mode</label>
@@ -303,7 +311,7 @@
                             </div>
                             <div class="form-group" style="margin-top: 1rem;">
                                 <label>Brand Voice Identity</label>
-                                <textarea rows="4" class="modal-input" placeholder="Extracted brand identity parameters will appear here..." readonly>{{ brandProfile || 'No knowledge base profile found. Try triggering a research loop.' }}</textarea>
+                                <textarea rows="5" class="modal-input" v-model="brandProfile" placeholder="AI will fill this in, or describe your brand voice manually. This is used as a system prompt when generating post content."></textarea>
                             </div>
                         </div>
                     </div>

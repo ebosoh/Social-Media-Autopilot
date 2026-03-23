@@ -79,6 +79,7 @@ createApp({
         });
         const brandProfile = ref("");
         const isSavingSettings = ref(false);
+        const isAnalyzingWebsite = ref(false);
         const settingsMessage = ref("");
 
         // ── Trends State ──────────────────────────────────────────────────────
@@ -496,6 +497,34 @@ createApp({
             }
         };
 
+        const analyzeWebsite = async () => {
+            settingsMessage.value = "";
+            if (!settings.value.targetUrl) {
+                settingsMessage.value = "Please enter a Target URL first.";
+                setTimeout(() => settingsMessage.value = "", 3000);
+                return;
+            }
+            isAnalyzingWebsite.value = true;
+            try {
+                if (!IS_HOSTED) { await new Promise(r => setTimeout(r, 1500)); return; }
+                const payload = { action: 'analyzeWebsite', idToken: googleIdToken.value, targetUrl: settings.value.targetUrl };
+                const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.success) {
+                    settings.value.promptPrefix = result.promptPrefix;
+                    brandProfile.value = result.brandVoice;
+                    settingsMessage.value = '✨ Generated! Review and click Save Config.';
+                } else {
+                    settingsMessage.value = result.error || 'Analysis failed.';
+                }
+            } catch (err) {
+                settingsMessage.value = 'Network error during analysis.';
+            } finally {
+                isAnalyzingWebsite.value = false;
+                setTimeout(() => settingsMessage.value = "", 5000);
+            }
+        };
+
         // ── Utilities ─────────────────────────────────────────────────────────
         const truncateText = (text, len) => !text ? "" : text.length <= len ? text : text.substring(0, len) + '...';
         const formatDate = (ds) => !ds ? "" : new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -543,7 +572,7 @@ createApp({
             // Navigation
             currentView, changeView,
             // Settings
-            settings, brandProfile, isSavingSettings, settingsMessage, saveSettings,
+            settings, brandProfile, isSavingSettings, isAnalyzingWebsite, settingsMessage, saveSettings, analyzeWebsite,
             // Trends
             trendsList, isLoadingTrends, isScanningTrends, trendsMessage, scanTrends,
             // User Management
