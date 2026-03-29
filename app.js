@@ -75,7 +75,10 @@ createApp({
         const settings = ref({
             targetUrl: "",
             promptPrefix: "",
-            publishMode: "manual"
+            publishMode: "manual",
+            postingFrequency: "Daily",
+            postingTime: "09:00",
+            timezone: ""
         });
         const brandProfile = ref("");
         const isSavingSettings = ref(false);
@@ -434,6 +437,9 @@ createApp({
                     settings.value.targetUrl = result.settings['Target_URL'] || "";
                     settings.value.promptPrefix = result.settings['Prompt_Prefix'] || "";
                     settings.value.publishMode = result.settings['Publish_Mode'] || "manual";
+                    settings.value.postingFrequency = result.settings['Posting_Frequency'] || "Daily";
+                    settings.value.postingTime = result.settings['Posting_Time'] || "09:00";
+                    settings.value.timezone = result.settings['Timezone'] || "";
                 }
                 brandProfile.value = result.brandProfile || "";
             } catch (err) { console.error("Failed to fetch settings", err); }
@@ -450,7 +456,10 @@ createApp({
                     settings: {
                         'Target_URL': settings.value.targetUrl,
                         'Prompt_Prefix': settings.value.promptPrefix,
-                        'Publish_Mode': settings.value.publishMode
+                        'Publish_Mode': settings.value.publishMode,
+                        'Posting_Frequency': settings.value.postingFrequency,
+                        'Posting_Time': settings.value.postingTime,
+                        'Timezone': settings.value.timezone
                     }
                 };
                 const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
@@ -471,7 +480,7 @@ createApp({
                 const res = await fetch(`${WEB_APP_URL}?action=getTrends`);
                 const result = await res.json();
                 trendsList.value = result.trends || [];
-            } catch (err) { console.error("Failed to fetch trends", err); } 
+            } catch (err) { console.error("Failed to fetch trends", err); }
             finally { isLoadingTrends.value = false; }
         };
 
