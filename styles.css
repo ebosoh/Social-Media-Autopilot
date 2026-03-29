@@ -1,30 +1,39 @@
 /* ==========================================================================
    CSS Variables & Theme Setup
    ========================================================================== */
-   :root {
+:root {
     /* Modern Dark Theme Palette */
-    --bg-base: #0f172a;      /* Slate 900 */
-    --bg-surface: #1e293b;   /* Slate 800 */
+    --bg-base: #0f172a;
+    /* Slate 900 */
+    --bg-surface: #1e293b;
+    /* Slate 800 */
     --bg-surface-glass: rgba(30, 41, 59, 0.7);
     --border-glass: rgba(255, 255, 255, 0.08);
-    
-    --text-primary: #f8fafc; /* Slate 50 */
-    --text-secondary: #94a3b8; /* Slate 400 */
-    
-    --accent-primary: #3b82f6; /* Blue 500 */
-    --accent-hover: #2563eb;   /* Blue 600 */
-    
-    --success: #10b981; /* Emerald 500 */
-    --warning: #f59e0b; /* Amber 500 */
-    --danger: #ef4444;  /* Red 500 */
-    
+
+    --text-primary: #f8fafc;
+    /* Slate 50 */
+    --text-secondary: #94a3b8;
+    /* Slate 400 */
+
+    --accent-primary: #3b82f6;
+    /* Blue 500 */
+    --accent-hover: #2563eb;
+    /* Blue 600 */
+
+    --success: #10b981;
+    /* Emerald 500 */
+    --warning: #f59e0b;
+    /* Amber 500 */
+    --danger: #ef4444;
+    /* Red 500 */
+
     /* Social Colors */
     --linkedin: #0a66c2;
     --twitter: #1da1f2;
     --instagram: #e1306c;
     --facebook: #1877f2;
     --tiktok: #000000;
-    
+
     /* Layout */
     --sidebar-width: 250px;
     --border-radius: 16px;
@@ -44,14 +53,16 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text-primary);
     background-color: var(--bg-base);
-    background-image: 
+    background-image:
         radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
 }
 
-[v-cloak] { display: none; }
+[v-cloak] {
+    display: none;
+}
 
 /* ==========================================================================
    Layout & Sidebar
@@ -110,7 +121,8 @@ body {
     font-size: 1.25rem;
 }
 
-.nav-links a:hover, .nav-links li.active a {
+.nav-links a:hover,
+.nav-links li.active a {
     background: rgba(59, 130, 246, 0.1);
     color: var(--accent-primary);
 }
@@ -207,6 +219,26 @@ h1 {
 .btn-success:hover:not(:disabled) {
     background-color: var(--success);
     color: white;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+}
+
+.btn-icon:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ff3333;
+    /* Red hover for delete */
 }
 
 .actions {
@@ -350,9 +382,20 @@ h1 {
     letter-spacing: 0.05em;
 }
 
-.status-badge.draft { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-.status-badge.approved_scheduled { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-.status-badge.posted { background: rgba(59, 130, 246, 0.2); color: var(--accent-primary); }
+.status-badge.draft {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.status-badge.approved_scheduled {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.status-badge.posted {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-primary);
+}
 
 .post-image-container {
     width: 100%;
@@ -410,7 +453,8 @@ h1 {
 /* ==========================================================================
    State Displays
    ========================================================================== */
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
     padding: 4rem 2rem;
     text-align: center;
     color: var(--text-secondary);
@@ -420,7 +464,8 @@ h1 {
     gap: 1rem;
 }
 
-.loading-state i, .empty-state i {
+.loading-state i,
+.empty-state i {
     font-size: 3rem;
     color: var(--accent-primary);
 }
@@ -430,19 +475,40 @@ h1 {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 1024px) {
-    .stats-overview { grid-template-columns: repeat(2, 1fr); }
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .main-content { margin-left: 0; padding: 1.5rem; }
-    .stats-overview { grid-template-columns: 1fr; }
-    .section-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 }
 
 /* ==========================================================================
@@ -456,15 +522,20 @@ h1 {
     justify-content: center;
     background-color: var(--bg-base);
     background-image:
-        radial-gradient(at 0% 0%,   rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
     z-index: 9999;
     animation: fadeIn 0.4s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .login-card {
@@ -475,8 +546,15 @@ h1 {
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .login-logo {
@@ -486,8 +564,15 @@ h1 {
     margin-bottom: 0.5rem;
 }
 
-.login-logo i  { font-size: 2rem; color: var(--accent-primary); }
-.login-logo h2 { font-size: 1.5rem; font-weight: 700; }
+.login-logo i {
+    font-size: 2rem;
+    color: var(--accent-primary);
+}
+
+.login-logo h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
 
 .login-subtitle {
     color: var(--text-secondary);
@@ -516,7 +601,7 @@ h1 {
     align-items: center;
 }
 
-.input-wrapper > i:first-child {
+.input-wrapper>i:first-child {
     position: absolute;
     left: 1rem;
     color: var(--text-secondary);
@@ -543,7 +628,9 @@ h1 {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.input-wrapper input::placeholder { color: rgba(148, 163, 184, 0.5); }
+.input-wrapper input::placeholder {
+    color: rgba(148, 163, 184, 0.5);
+}
 
 .toggle-password {
     position: absolute;
@@ -557,7 +644,9 @@ h1 {
     transition: color 0.2s;
 }
 
-.toggle-password:hover { color: var(--text-primary); }
+.toggle-password:hover {
+    color: var(--text-primary);
+}
 
 /* Login Error */
 .login-error {
@@ -733,7 +822,9 @@ h1 {
     gap: 0.6rem;
 }
 
-.modal-header h2 i { color: var(--accent-primary); }
+.modal-header h2 i {
+    color: var(--accent-primary);
+}
 
 .btn-icon {
     background: transparent;
@@ -750,7 +841,10 @@ h1 {
     transition: var(--transition);
 }
 
-.btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
 
 .modal-info {
     font-size: 0.88rem;
@@ -768,7 +862,10 @@ h1 {
     margin-bottom: 1rem;
 }
 
-.add-user-form .input-wrapper { flex: 1; min-width: 160px; }
+.add-user-form .input-wrapper {
+    flex: 1;
+    min-width: 160px;
+}
 
 .modal-input {
     width: 100%;
@@ -798,7 +895,8 @@ h1 {
     cursor: pointer;
 }
 
-select option, .modal-select option {
+select option,
+.modal-select option {
     background-color: var(--bg-surface);
     color: var(--text-primary);
 }
@@ -820,7 +918,8 @@ select option, .modal-select option {
     margin-top: 1rem;
 }
 
-.modal-loading, .modal-empty {
+.modal-loading,
+.modal-empty {
     color: var(--text-secondary);
     text-align: center;
     padding: 1.5rem;
@@ -842,7 +941,9 @@ select option, .modal-select option {
     transition: background 0.2s;
 }
 
-.user-row:hover { background: rgba(255, 255, 255, 0.06); }
+.user-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
 
 .user-avatar-sm {
     width: 36px;
@@ -889,8 +990,15 @@ select option, .modal-select option {
     border-radius: 20px;
 }
 
-.role-badge.admin  { background: rgba(59, 130, 246, 0.15); color: var(--accent-primary); }
-.role-badge.viewer { background: rgba(148, 163, 184, 0.1); color: var(--text-secondary); }
+.role-badge.admin {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-primary);
+}
+
+.role-badge.viewer {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-secondary);
+}
 
 .btn-remove {
     background: transparent;
