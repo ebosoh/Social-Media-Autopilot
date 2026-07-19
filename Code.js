@@ -18,14 +18,14 @@
 
 // [PLACEHOLDER_REQUIRED]: You will need to add your API keys here or in the Config sheet.
 const API_KEYS = {
-  GEMINI: 'AIzaSyAjvPUW5rKij8Z2DBsZdQfOgbLMuUxBrTk', // e.g. from Google AI Studio
-  NANO_BANANA_2: 'YOUR_NANO_BANANA_2_API_KEY',
+  GEMINI: PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY') || 'AIzaSyAjvPUW5rKij8Z2DBsZdQfOgbLMuUxBrTk', // e.g. from Google AI Studio
+  NANO_BANANA_2: PropertiesService.getScriptProperties().getProperty('NANO_BANANA_2_API_KEY') || 'YOUR_NANO_BANANA_2_API_KEY',
   // Social Platforms
-  TIKTOK: 'YOUR_TIKTOK_API_KEY',
-  FACEBOOK: 'YOUR_FACEBOOK_GRAPH_API_KEY',
-  INSTAGRAM: 'YOUR_INSTAGRAM_GRAPH_API_KEY',
-  X_TWITTER: 'YOUR_X_BEARER_TOKEN',
-  LINKEDIN: 'AQVDl1LH1EG_TWdXKxv8aYvxznml9gd_VExlatahwSvLl4qungdimwx0u-j22AtwWmvm_LyRoXPb_Isu4jJaE-GMaIS4XRGHz7rvjYvAY9BrEmp6cgngjV0U0gUwm6ege7YFDxOCvmNH2JnR6UbfLRXRgXgX6tjXtJFMRG71JvxB4hXkBoXk57O3fJ7a3TbBVwLx9BtAtEjCdkWJ4ImHw-L4aCou3rnMsM-8a0L4OkfDHbYl3ckXKbzthKe0mfMgMEiXgMq0lc-OKSGEtHu3f5QD7oUCphvlb9SYXXRfzPJsMycPiWmiFxop1ba_NrB2X8XyHh4dJgGBwE_iooCN9384t2OXJg'
+  TIKTOK: PropertiesService.getScriptProperties().getProperty('TIKTOK_API_KEY') || 'YOUR_TIKTOK_API_KEY',
+  FACEBOOK: PropertiesService.getScriptProperties().getProperty('FACEBOOK_GRAPH_API_KEY') || 'YOUR_FACEBOOK_GRAPH_API_KEY',
+  INSTAGRAM: PropertiesService.getScriptProperties().getProperty('INSTAGRAM_GRAPH_API_KEY') || 'YOUR_INSTAGRAM_GRAPH_API_KEY',
+  X_TWITTER: PropertiesService.getScriptProperties().getProperty('X_TWITTER_BEARER_TOKEN') || 'YOUR_X_BEARER_TOKEN',
+  LINKEDIN: PropertiesService.getScriptProperties().getProperty('LINKEDIN_ACCESS_TOKEN') || 'AQVDl1LH1EG_TWdXKxv8aYvxznml9gd_VExlatahwSvLl4qungdimwx0u-j22AtwWmvm_LyRoXPb_Isu4jJaE-GMaIS4XRGHz7rvjYvAY9BrEmp6cgngjV0U0gUwm6ege7YFDxOCvmNH2JnR6UbfLRXRgXgX6tjXtJFMRG71JvxB4hXkBoXk57O3fJ7a3TbBVwLx9BtAtEjCdkWJ4ImHw-L4aCou3rnMsM-8a0L4OkfDHbYl3ckXKbzthKe0mfMgMEiXgMq0lc-OKSGEtHu3f5QD7oUCphvlb9SYXXRfzPJsMycPiWmiFxop1ba_NrB2X8XyHh4dJgGBwE_iooCN9384t2OXJg'
 };
 
 // [PLACEHOLDER_REQUIRED]: Replace with your Google OAuth 2.0 Client ID.
