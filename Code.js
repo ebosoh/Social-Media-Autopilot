@@ -31,6 +31,12 @@ const API_KEYS = {
 // [PLACEHOLDER_REQUIRED]: Replace with your Google OAuth 2.0 Client ID.
 const GOOGLE_CLIENT_ID = '465287709316-85racf46nbmec2oqt98cuoeo68ucru2s.apps.googleusercontent.com';
 
+// [PLACEHOLDER_REQUIRED]: LinkedIn OAuth 2.0 App Credentials
+// You can use these to manage authorization or retrieve tokens.
+const LINKEDIN_CLIENT_ID = 'YOUR_LINKEDIN_CLIENT_ID';
+const LINKEDIN_CLIENT_SECRET = 'YOUR_LINKEDIN_CLIENT_SECRET';
+const LINKEDIN_REDIRECT_URI = 'YOUR_LINKEDIN_REDIRECT_URI'; // e.g. https://script.google.com/macros/s/.../exec
+
 // Set to true to bypass Google Auth if you are having persistent "invalid_token" issues.
 // WARNING: This makes your backend public. Only use for temporary debugging!
 const BYPASS_AUTH = true;
