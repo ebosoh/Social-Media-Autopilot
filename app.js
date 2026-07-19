@@ -340,11 +340,27 @@ createApp({
                 const result = await res.json();
                 if (result.data) {
                     queue.value = result.data.map(p => {
-                        let statusVal = p.Status || 'Pending';
+                        const getVal = (key) => {
+                            const found = Object.keys(p).find(k => k.toLowerCase() === key.toLowerCase());
+                            return found ? p[found] : "";
+                        };
+                        
+                        let rawStatus = getVal('Status');
+                        let statusVal = (typeof rawStatus === 'string' && rawStatus.trim() !== '') ? rawStatus : 'Pending';
                         if (statusVal !== 'Posted') {
                             statusVal = 'Pending';
                         }
-                        return { ...p, Status: statusVal, isApproving: false };
+                        
+                        return {
+                            _rowNum: p._rowNum,
+                            Topic: getVal('Topic'),
+                            Post_Text: getVal('Post_Text'),
+                            Image_URL: getVal('Image_URL'),
+                            Platform: getVal('Platform'),
+                            Status: statusVal,
+                            Timestamp: getVal('Timestamp'),
+                            isApproving: false
+                        };
                     }).reverse();
                 }
             } catch (err) {
