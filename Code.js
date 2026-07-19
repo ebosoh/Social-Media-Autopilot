@@ -32,10 +32,11 @@ const API_KEYS = {
 const GOOGLE_CLIENT_ID = '465287709316-85racf46nbmec2oqt98cuoeo68ucru2s.apps.googleusercontent.com';
 
 // [PLACEHOLDER_REQUIRED]: LinkedIn OAuth 2.0 App Credentials
-// You can use these to manage authorization or retrieve tokens.
-const LINKEDIN_CLIENT_ID = 'YOUR_LINKEDIN_CLIENT_ID';
-const LINKEDIN_CLIENT_SECRET = 'YOUR_LINKEDIN_CLIENT_SECRET';
-const LINKEDIN_REDIRECT_URI = 'YOUR_LINKEDIN_REDIRECT_URI'; // e.g. https://script.google.com/macros/s/.../exec
+// Fetches credentials securely from Apps Script Project Settings (Script Properties)
+// to prevent secrets from leaking into your public GitHub repository.
+const LINKEDIN_CLIENT_ID = PropertiesService.getScriptProperties().getProperty('LINKEDIN_CLIENT_ID') || 'YOUR_LINKEDIN_CLIENT_ID';
+const LINKEDIN_CLIENT_SECRET = PropertiesService.getScriptProperties().getProperty('LINKEDIN_CLIENT_SECRET') || 'YOUR_LINKEDIN_CLIENT_SECRET';
+const LINKEDIN_REDIRECT_URI = PropertiesService.getScriptProperties().getProperty('LINKEDIN_REDIRECT_URI') || 'YOUR_LINKEDIN_REDIRECT_URI';
 
 // Set to true to bypass Google Auth if you are having persistent "invalid_token" issues.
 // WARNING: This makes your backend public. Only use for temporary debugging!
