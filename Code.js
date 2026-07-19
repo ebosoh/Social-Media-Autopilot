@@ -141,7 +141,7 @@ function runSocialMediaLoop() {
   // 4. Save to Queue
   // Columns: Topic, Post_Text, Image_URL, Platform, Status, Timestamp
   const defaultPlatform = "LinkedIn"; // Rotate or decide based on Gemini strategy
-  const initialStatus = manualApproval ? "Draft" : "Posted";
+  const initialStatus = manualApproval ? "Pending" : "Posted";
 
   const contentQueueSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Content_Queue');
   contentQueueSheet.appendRow([trendingTopic, postDraft, imageUrl, defaultPlatform, initialStatus, new Date()]);
@@ -259,6 +259,42 @@ function publishToPlatform(postText, imageUrl, platform) {
       break;
   }
   return true; // Assume success for now unless explicitly handled
+}
+
+function checkAndPublishScheduledPosts() {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Content_Queue');
+    if (!sheet) return;
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return;
+    
+    const now = new Date();
+    
+    for (let i = 1; i < data.length; i++) {
+      const topic = data[i][0];
+      const text = data[i][1];
+      const image = data[i][2];
+      const platform = data[i][3];
+      const status = data[i][4];
+      const timestampRaw = data[i][5];
+      if (!timestampRaw) continue;
+      
+      const timestamp = new Date(timestampRaw);
+      if (status === 'Pending' && timestamp <= now) {
+        logError('checkAndPublishScheduledPosts', `Publishing scheduled post: "${topic}" on ${platform}`);
+        const success = publishToPlatform(text, image, platform);
+        
+        if (success) {
+          sheet.getRange(i + 1, 5).setValue('Posted');
+          sheet.getRange(i + 1, 6).setValue(new Date()); // Update timestamp to actual posted time
+        } else {
+          logError('checkAndPublishScheduledPosts', `Failed to publish scheduled post: "${topic}"`);
+        }
+      }
+    }
+  } catch (e) {
+    logError('checkAndPublishScheduledPosts', e.toString());
+  }
 }
 
 function fetchAndReplyComments() {
@@ -502,10 +538,29 @@ function doPost(e) {
 
     if (payload.action === 'editPost') {
       const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Content_Queue');
-      // Columns: Topic (1), Post_Text (2), Image_URL (3), Platform (4)
       sheet.getRange(payload.rowNum, 1).setValue(payload.topic);
       sheet.getRange(payload.rowNum, 2).setValue(payload.postText);
       sheet.getRange(payload.rowNum, 4).setValue(payload.platform);
+      
+      if (payload.status) {
+        sheet.getRange(payload.rowNum, 5).setValue(payload.status);
+      }
+      if (payload.timestamp) {
+        sheet.getRange(payload.rowNum, 6).setValue(new Date(payload.timestamp));
+      }
+      
+      if (payload.status === 'Posted') {
+        const image = sheet.getRange(payload.rowNum, 3).getValue();
+        const success = publishToPlatform(payload.postText, image, payload.platform);
+        if (!success) {
+          // Revert status to Pending if publishing failed
+          sheet.getRange(payload.rowNum, 5).setValue('Pending');
+          return json({ success: false, error: "Publishing failed. Check Error_Logger." });
+        } else {
+          sheet.getRange(payload.rowNum, 6).setValue(new Date()); // Update timestamp to actual posted time
+        }
+      }
+      
       return json({ success: true });
     }
 
@@ -622,18 +677,22 @@ function updateAutopilotTrigger() {
   const timezone = getConfigValue('Timezone') || Session.getScriptTimeZone();
   const isAuto = getConfigValue('Publish_Mode') === 'auto';
 
-  // 1. Clear existing triggers for this function
+  // 1. Clear existing triggers for both loops
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(t => {
-    if (t.getHandlerFunction() === 'runSocialMediaLoop') {
+    const handler = t.getHandlerFunction();
+    if (handler === 'runSocialMediaLoop' || handler === 'checkAndPublishScheduledPosts') {
       ScriptApp.deleteTrigger(t);
     }
   });
 
-  // 2. If not in auto mode, don't create a trigger
+  // 2. If not in auto mode, don't create triggers
   if (!isAuto) return;
 
-  // 3. Parse Time (HH:mm) or Date object
+  // 3. Create hourly trigger to check and publish scheduled posts
+  ScriptApp.newTrigger('checkAndPublishScheduledPosts').timeBased().everyHours(1).create();
+
+  // 4. Parse Time (HH:mm) or Date object for time-of-day frequencies
   let hours = 9;
   let minutes = 0;
 
@@ -646,10 +705,14 @@ function updateAutopilotTrigger() {
     minutes = timeStr.getMinutes();
   }
 
-  // 4. Create new Trigger
+  // 5. Create Autopilot content loop trigger
   let trigger = ScriptApp.newTrigger('runSocialMediaLoop').timeBased();
 
-  if (frequency === 'Daily') {
+  if (frequency === 'Every 6 Hours') {
+    trigger.everyHours(6).create();
+  } else if (frequency === 'Every 12 Hours') {
+    trigger.everyHours(12).create();
+  } else if (frequency === 'Daily') {
     trigger.everyDays(1).atHour(hours).nearMinute(minutes).inTimezone(timezone).create();
   } else if (frequency === 'Every 2 Days') {
     trigger.everyDays(2).atHour(hours).nearMinute(minutes).inTimezone(timezone).create();

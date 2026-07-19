@@ -116,7 +116,7 @@ createApp({
             );
         });
 
-        const pendingCount = computed(() => queue.value.filter(p => p.Status === 'Draft').length);
+        const pendingCount = computed(() => queue.value.filter(p => p.Status === 'Pending').length);
 
         // ── Auth Methods ──────────────────────────────────────────────────────
 
@@ -321,10 +321,10 @@ createApp({
         // ── Content Data ──────────────────────────────────────────────────────
 
         const dummyData = [
-            { _rowNum: 2, Topic: "AI in Dentistry 2026", Post_Text: "Embracing tomorrow, today. How AI is transforming patient care. Swipe to learn more! #TechBrain #AI", Image_URL: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800", Platform: "LinkedIn", Status: "Draft", Timestamp: new Date().toISOString() },
-            { _rowNum: 3, Topic: "Team Culture & Community", Post_Text: "Behind every great clinic is a team that treats each other like family. Meet our crew!", Image_URL: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800", Platform: "Instagram", Status: "Approved_Scheduled", Timestamp: new Date(Date.now() - 86400000).toISOString() },
-            { _rowNum: 4, Topic: "Quick Tips: Flossing", Post_Text: "Quick Tip: Flossing daily does more than protect your teeth, it protects your heart!", Image_URL: "", Platform: "X(Twitter)", Status: "Draft", Timestamp: new Date().toISOString() },
-            { _rowNum: 5, Topic: "TikTok Trends in Healthcare", Post_Text: "Healthcare is going viral! Here are the top TikTok trends shaking up the wellness space.", Image_URL: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800", Platform: "Tiktok", Status: "Draft", Timestamp: new Date().toISOString() },
+            { _rowNum: 2, Topic: "AI in Dentistry 2026", Post_Text: "Embracing tomorrow, today. How AI is transforming patient care. Swipe to learn more! #TechBrain #AI", Image_URL: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800", Platform: "LinkedIn", Status: "Pending", Timestamp: new Date().toISOString() },
+            { _rowNum: 3, Topic: "Team Culture & Community", Post_Text: "Behind every great clinic is a team that treats each other like family. Meet our crew!", Image_URL: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800", Platform: "Instagram", Status: "Pending", Timestamp: new Date(Date.now() - 86400000).toISOString() },
+            { _rowNum: 4, Topic: "Quick Tips: Flossing", Post_Text: "Quick Tip: Flossing daily does more than protect your teeth, it protects your heart!", Image_URL: "", Platform: "X(Twitter)", Status: "Pending", Timestamp: new Date().toISOString() },
+            { _rowNum: 5, Topic: "TikTok Trends in Healthcare", Post_Text: "Healthcare is going viral! Here are the top TikTok trends shaking up the wellness space.", Image_URL: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800", Platform: "Tiktok", Status: "Pending", Timestamp: new Date().toISOString() },
             { _rowNum: 6, Topic: "Brand Spotlight", Post_Text: "We believe in transparent, compassionate care. Check out what our patients are saying!", Image_URL: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&q=80&w=800", Platform: "Facebook", Status: "Posted", Timestamp: new Date(Date.now() - 172800000).toISOString() }
         ];
 
@@ -380,20 +380,50 @@ createApp({
 
         const showEditModal = ref(false);
         const editingPost = ref(null);
-        const editForm = ref({ topic: "", postText: "", platform: "" });
+        const editForm = ref({ topic: "", postText: "", platform: "", timestamp: "", status: "" });
         const isSavingEdit = ref(false);
+
+        const toDatetimeLocal = (isoString) => {
+            if (!isoString) return "";
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return "";
+            const tzOffset = date.getTimezoneOffset() * 60000;
+            return new Date(date - tzOffset).toISOString().slice(0, 16);
+        };
 
         const openEditModal = (post) => {
             editingPost.value = post;
-            editForm.value = { topic: post.Topic, postText: post.Post_Text, platform: post.Platform };
+            editForm.value = { 
+                topic: post.Topic, 
+                postText: post.Post_Text, 
+                platform: post.Platform,
+                timestamp: toDatetimeLocal(post.Timestamp),
+                status: post.Status
+            };
             showEditModal.value = true;
         };
 
-        const saveEdit = async () => {
+        const saveEdit = async (actionType) => {
             isSavingEdit.value = true;
             try {
+                let statusVal = editingPost.value.Status;
+                let timestampVal = editForm.value.timestamp ? new Date(editForm.value.timestamp).toISOString() : new Date().toISOString();
+                
+                if (actionType === 'postNow') {
+                    statusVal = 'Posted';
+                    timestampVal = new Date().toISOString();
+                } else if (actionType === 'schedule') {
+                    statusVal = 'Pending';
+                }
+
                 if (!IS_HOSTED) {
-                    Object.assign(editingPost.value, { Topic: editForm.value.topic, Post_Text: editForm.value.postText, Platform: editForm.value.platform });
+                    Object.assign(editingPost.value, { 
+                        Topic: editForm.value.topic, 
+                        Post_Text: editForm.value.postText, 
+                        Platform: editForm.value.platform,
+                        Status: statusVal,
+                        Timestamp: timestampVal
+                    });
                     showEditModal.value = false;
                     return;
                 }
@@ -406,16 +436,22 @@ createApp({
                         rowNum: editingPost.value._rowNum,
                         topic: editForm.value.topic,
                         postText: editForm.value.postText,
-                        platform: editForm.value.platform
+                        platform: editForm.value.platform,
+                        status: statusVal,
+                        timestamp: timestampVal
                     })
                 });
                 const result = await res.json();
                 if (result.success) {
                     showEditModal.value = false;
                     fetchData();
+                } else {
+                    alert(result.error || "Failed to save changes.");
                 }
-            } catch { alert("Failed to save changes."); }
-            finally { isSavingEdit.value = false; }
+            } catch (err) { 
+                alert("Failed to save changes."); 
+                console.error(err);
+            } finally { isSavingEdit.value = false; }
         };
 
         const triggerResearch = async () => {

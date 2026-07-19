@@ -215,7 +215,7 @@
                                             title="Delete Post">
                                             <i class="ph ph-trash"></i>
                                         </button>
-                                        <button v-if="post.Status === 'Draft'" class="btn btn-success btn-sm"
+                                        <button v-if="post.Status === 'Pending'" class="btn btn-success btn-sm"
                                             @click="approvePost(post)" :disabled="post.isApproving">
                                             <i class="ph ph-spinner-gap spin" v-if="post.isApproving"></i>
                                             <i class="ph ph-paper-plane-tilt" v-else></i>
@@ -325,6 +325,8 @@
                         <div class="form-group flex-1">
                             <label>Frequency</label>
                             <select class="modal-select" v-model="settings.postingFrequency">
+                                <option value="Every 6 Hours">Every 6 Hours</option>
+                                <option value="Every 12 Hours">Every 12 Hours</option>
                                 <option value="Daily">Daily</option>
                                 <option value="Every 2 Days">Every 2 Days</option>
                                 <option value="Weekly">Weekly (Mondays)</option>
@@ -413,14 +415,33 @@
                     <textarea v-model="editForm.postText" rows="6" class="modal-input"></textarea>
                 </div>
 
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @click="showEditModal = false">Cancel</button>
-                    <button class="btn btn-primary" @click="saveEdit" :disabled="isSavingEdit">
-                        <i class="ph ph-spinner-gap spin" v-if="isSavingEdit"></i>
-                        <i class="ph ph-check" v-else></i>
-                        Save Changes
-                    </button>
-                </div>
+                 <div class="form-group" v-if="editingPost && editingPost.Status !== 'Posted'">
+                     <label>Scheduled Posting Time (Local Time)</label>
+                     <input type="datetime-local" v-model="editForm.timestamp" class="modal-input">
+                 </div>
+
+                 <div class="modal-footer" style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                     <button class="btn btn-secondary" @click="showEditModal = false">Cancel</button>
+                     <template v-if="editingPost && editingPost.Status === 'Posted'">
+                         <button class="btn btn-primary" @click="saveEdit('saveOnly')" :disabled="isSavingEdit">
+                             <i class="ph ph-spinner-gap spin" v-if="isSavingEdit"></i>
+                             <i class="ph ph-floppy-disk" v-else></i>
+                             Save Changes
+                         </button>
+                     </template>
+                     <template v-else>
+                         <button class="btn btn-primary" @click="saveEdit('schedule')" :disabled="isSavingEdit">
+                             <i class="ph ph-spinner-gap spin" v-if="isSavingEdit"></i>
+                             <i class="ph ph-calendar-blank" v-else></i>
+                             Save & Schedule
+                         </button>
+                         <button class="btn btn-success" @click="saveEdit('postNow')" :disabled="isSavingEdit">
+                             <i class="ph ph-spinner-gap spin" v-if="isSavingEdit"></i>
+                             <i class="ph ph-paper-plane-tilt" v-else></i>
+                             Save & Post Now
+                         </button>
+                     </template>
+                 </div>
             </div>
         </div>
     </div>
