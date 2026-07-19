@@ -338,7 +338,15 @@ createApp({
                 }
                 const res = await fetch(`${WEB_APP_URL}?action=getData`);
                 const result = await res.json();
-                if (result.data) queue.value = result.data.map(p => ({ ...p, isApproving: false })).reverse();
+                if (result.data) {
+                    queue.value = result.data.map(p => {
+                        let statusVal = p.Status || 'Pending';
+                        if (statusVal !== 'Posted') {
+                            statusVal = 'Pending';
+                        }
+                        return { ...p, Status: statusVal, isApproving: false };
+                    }).reverse();
+                }
             } catch (err) {
                 alert("Failed to connect to Google Sheets DB.");
             } finally {
@@ -351,12 +359,12 @@ createApp({
             try {
                 if (!IS_HOSTED) {
                     await new Promise(r => setTimeout(r, 1000));
-                    post.Status = 'Approved_Scheduled';
+                    post.Status = 'Posted';
                     return;
                 }
                 const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'approvePost', idToken: googleIdToken.value, rowNum: post._rowNum }) });
                 const result = await res.json();
-                if (result.success) post.Status = 'Approved_Scheduled';
+                if (result.success) post.Status = 'Posted';
             } catch { alert("Failed to approve post."); }
             finally { post.isApproving = false; }
         };

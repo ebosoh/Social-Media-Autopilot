@@ -223,10 +223,10 @@ function generateVisualPrompt(postText, prefix) {
 
 function generateImageWithImagen(prompt) {
   try {
-    const encodedPrompt = encodeURIComponent(prompt + " cinematic lighting, ultra-realistic, 8k");
+    const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000); // Force uniqueness via seed
-    // Pollinations directly returns the generated image. Adding a seed ensures variety even for similar prompts.
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}`;
+    // Use the high-quality FLUX model via Pollinations AI for realistic, professional, on-brand image generation.
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
     return imageUrl;
   } catch (e) {
     logError('generateImageWithImagen', e.toString());
