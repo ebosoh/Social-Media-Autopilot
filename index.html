@@ -218,8 +218,8 @@
                                         <button v-if="post.Status === 'Draft'" class="btn btn-success btn-sm"
                                             @click="approvePost(post)" :disabled="post.isApproving">
                                             <i class="ph ph-spinner-gap spin" v-if="post.isApproving"></i>
-                                            <i class="ph ph-check" v-else></i>
-                                            Approve
+                                            <i class="ph ph-paper-plane-tilt" v-else></i>
+                                            Publish Now
                                         </button>
                                     </div>
                                 </div>
