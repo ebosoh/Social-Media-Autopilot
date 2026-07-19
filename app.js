@@ -78,7 +78,12 @@ createApp({
             publishMode: "manual",
             postingFrequency: "Daily",
             postingTime: "09:00",
-            timezone: ""
+            timezone: "",
+            linkedinPageUrl: "",
+            instagramPageUrl: "",
+            facebookPageUrl: "",
+            twitterPageUrl: "",
+            tiktokPageUrl: ""
         });
         const brandProfile = ref("");
         const isSavingSettings = ref(false);
@@ -440,6 +445,11 @@ createApp({
                     settings.value.postingFrequency = result.settings['Posting_Frequency'] || "Daily";
                     settings.value.postingTime = result.settings['Posting_Time'] || "09:00";
                     settings.value.timezone = result.settings['Timezone'] || "";
+                    settings.value.linkedinPageUrl = result.settings['LinkedIn_Page_URL'] || "";
+                    settings.value.instagramPageUrl = result.settings['Instagram_Page_URL'] || "";
+                    settings.value.facebookPageUrl = result.settings['Facebook_Page_URL'] || "";
+                    settings.value.twitterPageUrl = result.settings['Twitter_Page_URL'] || "";
+                    settings.value.tiktokPageUrl = result.settings['Tiktok_Page_URL'] || "";
                 }
                 brandProfile.value = result.brandProfile || "";
             } catch (err) { console.error("Failed to fetch settings", err); }
@@ -459,7 +469,12 @@ createApp({
                         'Publish_Mode': settings.value.publishMode,
                         'Posting_Frequency': settings.value.postingFrequency,
                         'Posting_Time': settings.value.postingTime,
-                        'Timezone': settings.value.timezone
+                        'Timezone': settings.value.timezone,
+                        'LinkedIn_Page_URL': settings.value.linkedinPageUrl,
+                        'Instagram_Page_URL': settings.value.instagramPageUrl,
+                        'Facebook_Page_URL': settings.value.facebookPageUrl,
+                        'Twitter_Page_URL': settings.value.twitterPageUrl,
+                        'Tiktok_Page_URL': settings.value.tiktokPageUrl
                     },
                     brandVoice: brandProfile.value
                 };
