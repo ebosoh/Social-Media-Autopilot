@@ -460,7 +460,8 @@ createApp({
                         'Posting_Frequency': settings.value.postingFrequency,
                         'Posting_Time': settings.value.postingTime,
                         'Timezone': settings.value.timezone
-                    }
+                    },
+                    brandVoice: brandProfile.value
                 };
                 const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                 const result = await res.json();
@@ -503,6 +504,26 @@ createApp({
             } finally {
                 isScanningTrends.value = false;
                 setTimeout(() => trendsMessage.value = "", 4000);
+            }
+        };
+
+        const deleteTrend = async (trend) => {
+            if (!IS_HOSTED) {
+                trendsList.value = trendsList.value.filter(t => t.Timestamp !== trend.Timestamp);
+                return;
+            }
+            if (!confirm(`Delete this trend discovery?`)) return;
+            try {
+                const payload = { action: 'deleteTrend', idToken: googleIdToken.value, timestamp: trend.Timestamp };
+                const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                const result = await res.json();
+                if (result.success) {
+                    await fetchTrends();
+                } else {
+                    alert(result.error || "Failed to delete trend.");
+                }
+            } catch (err) {
+                alert("Network error while deleting trend.");
             }
         };
 
@@ -583,7 +604,7 @@ createApp({
             // Settings
             settings, brandProfile, isSavingSettings, isAnalyzingWebsite, settingsMessage, saveSettings, analyzeWebsite,
             // Trends
-            trendsList, isLoadingTrends, isScanningTrends, trendsMessage, scanTrends,
+            trendsList, isLoadingTrends, isScanningTrends, trendsMessage, scanTrends, deleteTrend,
             // User Management
             showUserModal, allowedUsers, isLoadingUsers,
             newUserEmail, newUserName, newUserRole, isAddingUser, userModalError,
